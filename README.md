@@ -9,7 +9,6 @@ Ce projet permet de créer une application Web JEE basée sur Spring MVC, Thymel
 - Créer une page template
 - Faire la validation des formulaires
 - Faire la sécurité avec Spring Security
-- 
 ## Utilisation de JPA
 
 JPA (Java Persistence API) est une spécification créée pour standardiser le mapping Objet-Relationnel (ORM). Elle définit un ensemble d'interfaces, de classes abstraites et d'annotations qui facilitent la description du mapping objet-relationnel. L'utilisation de JPA permet à votre application d'être indépendante du framework ORM utilisé.
@@ -129,4 +128,36 @@ Voici le snippet XML de configuration Maven pour ces dépendances :
             <version>1.11.3</version>
         </dependency>
     </dependencies>
+```
+## Entities:
+L'entité `Patient` représente les informations sur un patient.
+pour les annotations utilisé:
+
+- `@Entity`: Indique que cette classe est une entité JPA.
+- `@Data`: Annotation de Lombok pour générer automatiquement les méthodes `toString`, `equals`, `hashCode`, etc.
+- `@NoArgsConstructor`, `@AllArgsConstructor`, `@Builder`: Annotations de Lombok pour générer automatiquement des constructeurs sans argument, avec tous les arguments et un constructeur de construction.
+- `@Id`: Indique que cet attribut est la clé primaire de l'entité.
+- `@GeneratedValue`: Indique la stratégie de génération de la valeur de la clé primaire.
+- `@NotEmpty`: Indique que la chaîne ne doit pas être vide.
+- `@Size`: Indique la taille de la chaîne.
+- `@Temporal`: Spécifie le type de données temporelles (DATE, TIME ou TIMESTAMP).
+- `@DateTimeFormat`: Spécifie le format de la date lors du liage.
+- `@DecimalMin`: Indique que la valeur doit être supérieure ou égale à la valeur spécifiée.
+
+```java
+@Entity
+@Data @NoArgsConstructor @AllArgsConstructor @Builder
+public class Patient {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @NotEmpty
+    @Size(min = 3, max = 40)
+    private String nom;
+    @Temporal(TemporalType.DATE)
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private Date dateNaissance;
+    private boolean malade;
+    @DecimalMin("10")
+    private int score;
+}
 ```
