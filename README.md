@@ -131,7 +131,7 @@ Voici le snippet XML de configuration Maven pour ces dépendances :
 ```
 ## Entities:
 L'entité `Patient` représente les informations sur un patient.
-pour les annotations utilisé:
+Pour les annotations utilisées
 
 - `@Entity`: Indique que cette classe est une entité JPA.
 - `@Data`: Annotation de Lombok pour générer automatiquement les méthodes `toString`, `equals`, `hashCode`, etc.
@@ -161,3 +161,75 @@ public class Patient {
     private int score;
 }
 ```
+
+## Repository
+L'interface `PatientRepository` est responsable de l'accès aux données des patients.
+- `findByNomContains(String nom)`: Recherche les patients par nom en utilisant Spring Data.
+- `search(String nom)`: Recherche les patients par nom en utilisant une requête JPQL personnalisée.
+- `findByScoreGreaterThan(int score)`: Recherche les patients avec un score supérieur à une valeur donnée en utilisant Spring Data.
+- `searchByScore(int score)`: Recherche les patients avec un score supérieur à une valeur donnée en utilisant une requête JPQL personnalisée.
+- `findByNomContains(String keyword, Pageable pageable)`: Recherche paginée des patients par nom en utilisant Spring Data.
+
+```java
+public interface PatientRepository extends JpaRepository<Patient, Long> {
+    List<Patient> findByNomContains(String nom);
+    @Query("select p from Patient p where p.nom like :nom")
+    List<Patient> search(@Param("nom") String nom);
+    List<Patient> findByScoreGreaterThan(int score);
+    @Query("select p from Patient p where p.score > :x")
+    List<Patient> searchByScore(@Param("x") int score);
+    Page<Patient> findByNomContains(String keyword, Pageable pageable);
+}
+```
+
+## Templates 
+### patients
+Le fichier HTML des patients représente la page qui affiche la liste des patients dans notre application. 
+Voici un extrait du code
+```html
+
+            <form method="get" th:action="@{/user/index}">
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" placeholder="Rechercher" name="keyword" th:value="${keyword}">
+                    <button  type="submit">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </form>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Nom</th>
+                    <th>Date de naissance</th>
+                    <th>Malade</th>
+                    <th>Score</th>
+                <tr>
+                <tr th:each="patient : ${patients}">
+                    <td th:text="${patient.id}"></td>
+                    <td th:text="${patient.nom}"></td>
+                    <td th:text="${patient.dateNaissance}"></td>
+                    <td th:text="${patient.malade}"></td>
+                    <td th:text="${patient.score}"></td>
+                    <td th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+                        <a onclick="return confirm('Etes vous sure?')" th:href="@{/admin/delete(id=${patient.id},keyword=${keyword},page=${currentPage})}" class="'btn btn-danger'">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </td>
+                    <td th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+                        <a  th:href="@{/admin/editPatient(id=${patient.id},keyword=${keyword},page=${currentPage})}" class="'btn btn-success'">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                    </td>
+                </tr>
+                </thead>
+            </table>
+            <ul class="nav nav-pills">
+                <li th:each ="page,status:${pages}">
+                    <a th:href="@{/user/index(page=${status.index},keyword=${keyword})}"
+                       th:class="${currentPage==status.index? 'btn btn-info ms-1':'btn btn-outline-info ms-1'}"
+                       th:text = "${status.index}"></a>
+                </li>
+            </ul>
+```
+
